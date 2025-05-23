@@ -21,15 +21,23 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
+# Get base directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load models with error handling
 try:
-    svm_model = joblib.load('models/svm_model.joblib')
-    rf_model = joblib.load('models/rf_model.joblib')
-    deep_learning_model = tf.keras.models.load_model('models/deep_learning_model.h5', compile=False)
+    svm_model_path = os.path.join(BASE_DIR, 'models', 'svm_model.joblib')
+    rf_model_path = os.path.join(BASE_DIR, 'models', 'rf_model.joblib')
+    dl_model_path = os.path.join(BASE_DIR, 'models', 'deep_learning_model.h5')
+    
+    svm_model = joblib.load(svm_model_path)
+    rf_model = joblib.load(rf_model_path)
+    deep_learning_model = tf.keras.models.load_model(dl_model_path, compile=False)
     deep_learning_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     
     # Load class indices and create new label encoder
-    with open('class_indices.json', 'r') as f:
+    class_indices_path = os.path.join(BASE_DIR, 'class_indices.json')
+    with open(class_indices_path, 'r') as f:
         class_indices = json.load(f)
     
     # Create new label encoder with current classes
