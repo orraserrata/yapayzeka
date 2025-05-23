@@ -36,10 +36,6 @@ def test():
     
     return jsonify(result)
 
-# Create upload folder if it doesn't exist
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
 # Get base directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 print(f"Base directory: {BASE_DIR}")
@@ -50,46 +46,46 @@ for root, dirs, files in os.walk(BASE_DIR):
     print(f"\nDirectory: {root}")
     print("Files:", files)
 
-# Load models with error handling
-try:
-    svm_model_path = os.path.join(BASE_DIR, 'models', 'svm_model.joblib')
-    rf_model_path = os.path.join(BASE_DIR, 'models', 'rf_model.joblib')
-    dl_model_path = os.path.join(BASE_DIR, 'models', 'deep_learning_model.h5')
-    
-    print(f"\nModel paths:")
-    print(f"SVM model path: {svm_model_path}")
-    print(f"RF model path: {rf_model_path}")
-    print(f"DL model path: {dl_model_path}")
-    
-    # Check if files exist
-    print(f"\nFile existence:")
-    print(f"SVM model exists: {os.path.exists(svm_model_path)}")
-    print(f"RF model exists: {os.path.exists(rf_model_path)}")
-    print(f"DL model exists: {os.path.exists(dl_model_path)}")
-    
-    svm_model = joblib.load(svm_model_path)
-    rf_model = joblib.load(rf_model_path)
-    deep_learning_model = tf.keras.models.load_model(dl_model_path, compile=False)
-    deep_learning_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    
-    # Load class indices and create new label encoder
-    class_indices_path = os.path.join(BASE_DIR, 'class_indices.json')
-    print(f"\nClass indices path: {class_indices_path}")
-    print(f"Class indices exists: {os.path.exists(class_indices_path)}")
-    
-    with open(class_indices_path, 'r') as f:
-        class_indices = json.load(f)
-    
-    # Create new label encoder with current classes
-    label_encoder = LabelEncoder()
-    label_encoder.classes_ = np.array(list(class_indices.keys()))
-    
-    print("\nTüm modeller başarıyla yüklendi.")
-    print(f"Mevcut sınıf sayısı: {len(label_encoder.classes_)}")
-    print("Sınıflar:", label_encoder.classes_)
-except Exception as e:
-    print(f"Model yükleme hatası: {str(e)}")
-    raise
+# Create upload folder if it doesn't exist
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+# Create models folder if it doesn't exist
+MODELS_DIR = os.path.join(BASE_DIR, 'models')
+if not os.path.exists(MODELS_DIR):
+    os.makedirs(MODELS_DIR)
+    print(f"Created models directory at: {MODELS_DIR}")
+
+# Model paths
+svm_model_path = os.path.join(MODELS_DIR, 'svm_model.joblib')
+rf_model_path = os.path.join(MODELS_DIR, 'rf_model.joblib')
+dl_model_path = os.path.join(MODELS_DIR, 'deep_learning_model.h5')
+class_indices_path = os.path.join(BASE_DIR, 'class_indices.json')
+
+# Check if model files exist
+print("\nChecking model files:")
+print(f"SVM model exists: {os.path.exists(svm_model_path)}")
+print(f"RF model exists: {os.path.exists(rf_model_path)}")
+print(f"DL model exists: {os.path.exists(dl_model_path)}")
+print(f"Class indices exists: {os.path.exists(class_indices_path)}")
+
+# Load models
+svm_model = joblib.load(svm_model_path)
+rf_model = joblib.load(rf_model_path)
+deep_learning_model = tf.keras.models.load_model(dl_model_path, compile=False)
+deep_learning_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Load class indices and create new label encoder
+with open(class_indices_path, 'r') as f:
+    class_indices = json.load(f)
+
+# Create new label encoder with current classes
+label_encoder = LabelEncoder()
+label_encoder.classes_ = np.array(list(class_indices.keys()))
+
+print("\nTüm modeller başarıyla yüklendi.")
+print(f"Mevcut sınıf sayısı: {len(label_encoder.classes_)}")
+print("Sınıflar:", label_encoder.classes_)
 
 def create_prediction_chart(predictions):
     """Tahmin sonuçları için çubuk grafik oluşturur"""
