@@ -17,6 +17,25 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
+# Test endpoint to check file structure
+@app.route('/test')
+def test():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    result = {
+        'base_dir': base_dir,
+        'files': {},
+        'models_dir_exists': os.path.exists(os.path.join(base_dir, 'models')),
+        'uploads_dir_exists': os.path.exists(os.path.join(base_dir, 'uploads')),
+        'templates_dir_exists': os.path.exists(os.path.join(base_dir, 'templates'))
+    }
+    
+    # List all files in base directory
+    for root, dirs, files in os.walk(base_dir):
+        rel_path = os.path.relpath(root, base_dir)
+        result['files'][rel_path] = files
+    
+    return jsonify(result)
+
 # Create upload folder if it doesn't exist
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
