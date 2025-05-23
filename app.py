@@ -23,12 +23,30 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 # Get base directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+print(f"Base directory: {BASE_DIR}")
+
+# List all files in the directory
+print("Files in base directory:")
+for root, dirs, files in os.walk(BASE_DIR):
+    print(f"\nDirectory: {root}")
+    print("Files:", files)
 
 # Load models with error handling
 try:
     svm_model_path = os.path.join(BASE_DIR, 'models', 'svm_model.joblib')
     rf_model_path = os.path.join(BASE_DIR, 'models', 'rf_model.joblib')
     dl_model_path = os.path.join(BASE_DIR, 'models', 'deep_learning_model.h5')
+    
+    print(f"\nModel paths:")
+    print(f"SVM model path: {svm_model_path}")
+    print(f"RF model path: {rf_model_path}")
+    print(f"DL model path: {dl_model_path}")
+    
+    # Check if files exist
+    print(f"\nFile existence:")
+    print(f"SVM model exists: {os.path.exists(svm_model_path)}")
+    print(f"RF model exists: {os.path.exists(rf_model_path)}")
+    print(f"DL model exists: {os.path.exists(dl_model_path)}")
     
     svm_model = joblib.load(svm_model_path)
     rf_model = joblib.load(rf_model_path)
@@ -37,6 +55,9 @@ try:
     
     # Load class indices and create new label encoder
     class_indices_path = os.path.join(BASE_DIR, 'class_indices.json')
+    print(f"\nClass indices path: {class_indices_path}")
+    print(f"Class indices exists: {os.path.exists(class_indices_path)}")
+    
     with open(class_indices_path, 'r') as f:
         class_indices = json.load(f)
     
@@ -44,7 +65,7 @@ try:
     label_encoder = LabelEncoder()
     label_encoder.classes_ = np.array(list(class_indices.keys()))
     
-    print("Tüm modeller başarıyla yüklendi.")
+    print("\nTüm modeller başarıyla yüklendi.")
     print(f"Mevcut sınıf sayısı: {len(label_encoder.classes_)}")
     print("Sınıflar:", label_encoder.classes_)
 except Exception as e:
