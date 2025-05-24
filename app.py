@@ -1,10 +1,11 @@
+import os
+import sys
 from flask import Flask, request, render_template, jsonify
 import numpy as np
 import cv2
 import tensorflow as tf
 import joblib
 from data_preprocessing import extract_features
-import os
 from werkzeug.utils import secure_filename
 import matplotlib.pyplot as plt
 import io
@@ -13,73 +14,48 @@ import json
 from datetime import datetime
 from sklearn.preprocessing import LabelEncoder
 
+# Get the absolute path of the current directory
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+print(f"Current directory: {CURRENT_DIR}")
+
+# List all files in the current directory
+print("\nFiles in current directory:")
+for file in os.listdir(CURRENT_DIR):
+    print(f"- {file}")
+
+# Create Flask app
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-
-# Test endpoint to check file structure
-@app.route('/test')
-def test():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    result = {
-        'base_dir': base_dir,
-        'files': {},
-        'models_dir_exists': os.path.exists(os.path.join(base_dir, 'models')),
-        'uploads_dir_exists': os.path.exists(os.path.join(base_dir, 'uploads')),
-        'templates_dir_exists': os.path.exists(os.path.join(base_dir, 'templates'))
-    }
-    
-    # List all files in base directory
-    for root, dirs, files in os.walk(base_dir):
-        rel_path = os.path.relpath(root, base_dir)
-        result['files'][rel_path] = files
-    
-    return jsonify(result)
-
-# Get base directory
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-print(f"Base directory: {BASE_DIR}")
-
-# List all files in the directory
-print("Files in base directory:")
-for root, dirs, files in os.walk(BASE_DIR):
-    print(f"\nDirectory: {root}")
-    print("Files:", files)
 
 # Create upload folder if it doesn't exist
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-# Model paths (now in the same directory as app.py)
-svm_model_path = os.path.join(BASE_DIR, 'svm_model.joblib')
-rf_model_path = os.path.join(BASE_DIR, 'rf_model.joblib')
-dl_model_path = os.path.join(BASE_DIR, 'deep_learning_model.h5')
-class_indices_path = os.path.join(BASE_DIR, 'class_indices.json')
-
-# Check if model files exist
-print("\nChecking model files:")
-print(f"SVM model exists: {os.path.exists(svm_model_path)}")
-print(f"RF model exists: {os.path.exists(rf_model_path)}")
-print(f"DL model exists: {os.path.exists(dl_model_path)}")
-print(f"Class indices exists: {os.path.exists(class_indices_path)}")
-
-# Load models
-svm_model = joblib.load(svm_model_path)
-rf_model = joblib.load(rf_model_path)
-deep_learning_model = tf.keras.models.load_model(dl_model_path, compile=False)
-deep_learning_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-# Load class indices and create new label encoder
-with open(class_indices_path, 'r') as f:
-    class_indices = json.load(f)
-
-# Create new label encoder with current classes
-label_encoder = LabelEncoder()
-label_encoder.classes_ = np.array(list(class_indices.keys()))
-
-print("\nTüm modeller başarıyla yüklendi.")
-print(f"Mevcut sınıf sayısı: {len(label_encoder.classes_)}")
-print("Sınıflar:", label_encoder.classes_)
+# Load models with error handling
+try:
+    # Model dosyaları kök dizinde
+    svm_model = joblib.load('svm_model.joblib')
+    rf_model = joblib.load('rf_model.joblib')
+    deep_learning_model = tf.keras.models.load_model('deep_learning_model.h5', compile=False)
+    deep_learning_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    
+    # Load class indices and create new label encoder
+    with open('class_indices.json', 'r') as f:
+        class_indices = json.load(f)
+    
+    # Create new label encoder with current classes
+    label_encoder = LabelEncoder()
+    label_encoder.classes_ = np.array(list(class_indices.keys()))
+    
+    print("Tüm modeller başarıyla yüklendi.")
+    print(f"Mevcut sınıf sayısı: {len(label_encoder.classes_)}")
+    print("Sınıflar:", label_encoder.classes_)
+except Exception as e:
+    print(f"Model yükleme hatası: {str(e)}")
+    print(f"Mevcut dizin: {os.getcwd()}")
+    print(f"Dizin içeriği: {os.listdir('.')}")
+    raise
 
 def create_prediction_chart(predictions):
     """Tahmin sonuçları için çubuk grafik oluşturur"""
