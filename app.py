@@ -14,16 +14,10 @@ import json
 from datetime import datetime
 from sklearn.preprocessing import LabelEncoder
 
-# Get the absolute path of the current directory
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-print(f"Current directory: {CURRENT_DIR}")
+# Debug: Mevcut dizini ve içeriğini yazdır
+print("Current working directory:", os.getcwd())
+print("Directory contents:", os.listdir('.'))
 
-# List all files in the current directory
-print("\nFiles in current directory:")
-for file in os.listdir(CURRENT_DIR):
-    print(f"- {file}")
-
-# Create Flask app
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -35,22 +29,29 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 # Load models with error handling
 try:
     # Model dosyaları kök dizinde
+    print("Loading SVM model...")
     svm_model = joblib.load('svm_model.joblib')
+    print("SVM model loaded successfully")
+    
+    print("Loading RF model...")
     rf_model = joblib.load('rf_model.joblib')
+    print("RF model loaded successfully")
+    
+    print("Loading Deep Learning model...")
     deep_learning_model = tf.keras.models.load_model('deep_learning_model.h5', compile=False)
     deep_learning_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    print("Deep Learning model loaded successfully")
     
-    # Load class indices and create new label encoder
+    print("Loading class indices...")
     with open('class_indices.json', 'r') as f:
         class_indices = json.load(f)
+    print("Class indices loaded successfully")
     
     # Create new label encoder with current classes
     label_encoder = LabelEncoder()
     label_encoder.classes_ = np.array(list(class_indices.keys()))
+    print(f"Label encoder created with {len(label_encoder.classes_)} classes")
     
-    print("Tüm modeller başarıyla yüklendi.")
-    print(f"Mevcut sınıf sayısı: {len(label_encoder.classes_)}")
-    print("Sınıflar:", label_encoder.classes_)
 except Exception as e:
     print(f"Model yükleme hatası: {str(e)}")
     print(f"Mevcut dizin: {os.getcwd()}")
