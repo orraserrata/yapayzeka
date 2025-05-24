@@ -30,20 +30,20 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 try:
     # Model dosyaları kök dizinde
     print("Loading SVM model...")
-    svm_model = joblib.load('svm_model.joblib')
+    svm_model = joblib.load('models/svm_model.joblib')
     print("SVM model loaded successfully")
     
     print("Loading RF model...")
-    rf_model = joblib.load('rf_model.joblib')
+    rf_model = joblib.load('models/rf_model.joblib')
     print("RF model loaded successfully")
     
     print("Loading Deep Learning model...")
-    deep_learning_model = tf.keras.models.load_model('deep_learning_model.h5', compile=False)
+    deep_learning_model = tf.keras.models.load_model('models/deep_learning_model.h5', compile=False)
     deep_learning_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     print("Deep Learning model loaded successfully")
     
     print("Loading class indices...")
-    with open('class_indices.json', 'r') as f:
+    with open('models/class_indices.json', 'r') as f:
         class_indices = json.load(f)
     print("Class indices loaded successfully")
     
