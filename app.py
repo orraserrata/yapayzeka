@@ -50,16 +50,10 @@ for root, dirs, files in os.walk(BASE_DIR):
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-# Create models folder if it doesn't exist
-MODELS_DIR = os.path.join(BASE_DIR, 'models')
-if not os.path.exists(MODELS_DIR):
-    os.makedirs(MODELS_DIR)
-    print(f"Created models directory at: {MODELS_DIR}")
-
-# Model paths
-svm_model_path = os.path.join(MODELS_DIR, 'svm_model.joblib')
-rf_model_path = os.path.join(MODELS_DIR, 'rf_model.joblib')
-dl_model_path = os.path.join(MODELS_DIR, 'deep_learning_model.h5')
+# Model paths (now in the same directory as app.py)
+svm_model_path = os.path.join(BASE_DIR, 'svm_model.joblib')
+rf_model_path = os.path.join(BASE_DIR, 'rf_model.joblib')
+dl_model_path = os.path.join(BASE_DIR, 'deep_learning_model.h5')
 class_indices_path = os.path.join(BASE_DIR, 'class_indices.json')
 
 # Check if model files exist
